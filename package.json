@@ -1,7 +1,7 @@
 {
 	"scripts": {
 		"dev": "nodemon index.js",
-		"start": "node --env-file=.env index.js",
+		"start": "node index.js --PORT=7777",
 		"dep": "git pull && pnpm i && pm2 start ecosystem.config.cjs --env pro"
 	},
 	"main": "index.js",
