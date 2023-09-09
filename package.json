@@ -1,6 +1,7 @@
 {
 	"scripts": {
-		"dev": "nodemon index.js"
+		"dev": "nodemon index.js",
+		"start": "node --env-file=.env index.js"
 	},
 	"type": "module",
 	"dependencies": {

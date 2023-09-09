@@ -4,8 +4,11 @@ import * as cheerio from "cheerio";
 import axios from "axios";
 
 axios.defaults.timeout = 30000;
-const cache = new Map();
+const app = express();
+app.use(cors());
+const port = process.env.PORT || 6666;
 
+const cache = new Map();
 const sourceMap = {
   oneJav: {
     baseUrl: "https://onejav.com/torrent",
@@ -27,10 +30,6 @@ const removeTail = (code) => {
     ""
   );
 };
-
-const app = express();
-app.use(cors());
-const port = 3000;
 
 const getHtml = async (url) => {
   try {
