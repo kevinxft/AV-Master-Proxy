@@ -9,18 +9,36 @@ app.use(cors());
 const port = process.env.PORT || 7771;
 
 const cache = new Map();
+const enhanceQuality = (url) => {
+  return url ? url.replace(/output-quality=(\d+)/, "output-quality=100") : null;
+};
 const sourceMap = {
-  oneJav: {
+  onejav: {
     baseUrl: "https://onejav.com/torrent",
     replace: (code) => code.toLowerCase().replace("-", ""),
+    getImgSrc: ($) => {
+      let imgSrc = $(".image").prop("src");
+      imgSrc = enhanceQuality(imgSrc);
+      return imgSrc;
+    },
   },
-  "141Jav": {
+  "141jav": {
     baseUrl: "https://www.141jav.com/torrent",
     replace: (code) => code.toUpperCase().replace("-", ""),
+    getImgSrc: ($) => {
+      return $(".image").prop("src");
+    },
   },
-  javBus: {
+  javbus: {
     baseUrl: "https://www.javbus.com",
     replace: (code) => code.toUpperCase(),
+    getImgSrc($) {
+      let imgSrc = $(".bigImage").prop("href");
+      if (imgSrc) {
+        return `${this.baseUrl}${imgSrc}`;
+      }
+      return null;
+    },
   },
 };
 
@@ -54,8 +72,7 @@ const getAVPost = async (code, source) => {
   const html = await getHtml(url);
   if (html) {
     const $ = cheerio.load(html);
-    let imgSrc = $(".image").prop("src");
-    imgSrc = enhanceQuality(imgSrc);
+    let imgSrc = sourceObj.getImgSrc($);
     console.log("imgSrc: ", imgSrc);
     if (imgSrc) {
       cache.set(code, imgSrc);
@@ -66,13 +83,9 @@ const getAVPost = async (code, source) => {
   }
 };
 
-const enhanceQuality = (url) => {
-  return url ? url.replace(/output-quality=(\d+)/, "output-quality=100") : null;
-};
-
 app.get("/av/:code", async (req, res) => {
   let { code } = req.params;
-  const { source = "141Jav" } = req.query;
+  const { source = "javbus" } = req.query;
   if (!sourceMap[source]) {
     res.send("source参数错误");
     return;
@@ -96,8 +109,8 @@ app.get("/cover", (req, res) => {
       })
       .then((response) => {
         console.log("success");
-        res.set(response.headers); //把整个的响应头塞入更优雅一些
-        res.end(response.data.toString("binary"), "binary"); //这句是关键，有两
+        res.set(response.headers);
+        res.end(response.data.toString("binary"), "binary");
       })
       .catch((response) => {
         console.log("fail");
