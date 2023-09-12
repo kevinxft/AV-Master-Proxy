@@ -52,6 +52,7 @@ const removeTail = (code) => {
 const getHtml = async (url) => {
   try {
     const res = await axios.get(url);
+    console.log(res);
     return res.data ? res.data : null;
   } catch (error) {
     return null;
@@ -85,7 +86,8 @@ const getAVPost = async (code, source) => {
 
 app.get("/av/:code", async (req, res) => {
   let { code } = req.params;
-  const { source = "javbus" } = req.query;
+  let { source = "javbus" } = req.query;
+  source = source.toLocaleLowerCase();
   if (!sourceMap[source]) {
     res.send("source参数错误");
     return;
