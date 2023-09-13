@@ -6,12 +6,14 @@ import axios from "axios";
 axios.defaults.timeout = 30000;
 const app = express();
 app.use(cors());
-const port = process.env.PORT || 7771;
+const port = process.env.PORT || 7777;
 
 const cache = new Map();
 const enhanceQuality = (url) => {
   return url ? url.replace(/output-quality=(\d+)/, "output-quality=100") : null;
 };
+
+const autoKeys = ["javbus", "141jav", "onejav"];
 const sourceMap = {
   onejav: {
     baseUrl: "https://onejav.com/torrent",
@@ -52,7 +54,6 @@ const removeTail = (code) => {
 const getHtml = async (url) => {
   try {
     const res = await axios.get(url);
-    console.log(res);
     return res.data ? res.data : null;
   } catch (error) {
     return null;
@@ -80,19 +81,35 @@ const getAVPost = async (code, source) => {
     }
     return imgSrc;
   } else {
-    console.log("没有html");
+    console.log("no html");
+    return null;
   }
+};
+
+const autoAVPost = async (code) => {
+  for (const key of autoKeys) {
+    const imgSrc = await getAVPost(code, key);
+    if (imgSrc) {
+      return imgSrc;
+    }
+  }
+  return null;
 };
 
 app.get("/av/:code", async (req, res) => {
   let { code } = req.params;
-  let { source = "javbus" } = req.query;
+  let { source = "auto" } = req.query;
   source = source.toLocaleLowerCase();
-  if (!sourceMap[source]) {
+  if (!sourceMap[source] && source !== "auto") {
     res.send("source参数错误");
     return;
   }
-  let url = await getAVPost(code, source);
+  let url;
+  if (source === "auto") {
+    url = await autoAVPost(code);
+  } else {
+    url = await getAVPost(code, source);
+  }
 
   res.send(
     JSON.stringify({
