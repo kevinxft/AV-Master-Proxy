@@ -5,7 +5,7 @@ module.exports = {
       script: "./index.js",
       env_pro: {
         ENV: "pro",
-        PORT: 7771,
+        PORT: 7777,
       },
     },
   ],
